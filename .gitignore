@@ -1,0 +1,77 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!/src/main/**/target/
+!/src/test/**/target/
+
+# Kotlin
+.kotlin
+
+# IntelliJ IDEA
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Build
+build/
+!/src/main/**/build/
+!/src/test/**/build/
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# Java compiled files
+*.class
+
+# Application generated files (Excel exports)
+#*.xlsx
+#*.xls
+#*.csv
+#autosalon_data.xlsx
+#data.xlsx
+
+# Logs
+*.log
+logs/
+
+# Environment files with secrets
+.env
+.env.local
+*.properties
+!src/main/resources/application.properties.example
+
+# Test data
+test-data/
+*.sql.bak
+
+# Dependencies
+node_modules/
+vendor/
