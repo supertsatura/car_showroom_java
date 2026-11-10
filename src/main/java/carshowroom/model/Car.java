@@ -5,6 +5,7 @@ import carshowroom.model.enums.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+
 public class Car {
     private int carId;
     private String carBrand;
@@ -151,13 +152,5 @@ public class Car {
 
     public void setCarPrice(BigDecimal carPrice) {
         this.carPrice = carPrice;
-    }
-
-    @Override
-    public String toString() {
-        return carBrand + " " + carModel +
-                " (" + (carReleaseDate != null ? carReleaseDate.getYear() : "-") + " г.) | " +
-                "Пробег: " + carMileage + " км | " +
-                carPrice + " руб.";
     }
 }

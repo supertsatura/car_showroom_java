@@ -8,34 +8,44 @@ import carshowroom.service.CarService;
 import carshowroom.service.OrderService;
 import carshowroom.ui.Menu;
 import carshowroom.util.DatabaseManager;
+import carshowroom.util.InputReader;
 
-import java.util.Scanner;
+import java.sql.Connection;
+
 
 public class Main {
+
     public static void main(String[] args) {
         DatabaseManager dbManager = new DatabaseManager();
-        Scanner scanner = new Scanner(System.in);
+        InputReader inputReader = new InputReader();
 
-        try {
-            dbManager.getConnection().close();
-            System.out.println("Подключение к базе данных установлено.\n");
+        try (Connection conn = dbManager.getConnection()) {
 
-            BuyerRepository buyerRepo = new BuyerRepository(dbManager);
-            CarRepository carRepo = new CarRepository(dbManager);
-            OrderRepository orderRepo = new OrderRepository(dbManager);
+            if (conn.isValid(10)) {
+                System.out.println("Подключение к базе данных установлено.");
 
-            BuyerService buyerService = new BuyerService(buyerRepo);
-            CarService carService = new CarService(carRepo);
-            OrderService orderService = new OrderService(orderRepo);
-
-            Menu menu = new Menu(buyerService, carService, orderService, scanner);
-            menu.showMainMenu();
-
+                Menu menu = createMenu(dbManager, inputReader);
+                menu.showMainMenu();
+            } else {
+                System.out.println("База данных не отвечает.");
+            }
         } catch (Exception e) {
-            System.err.println(" Ошибка подключения к базе данных: " + e.getMessage());
+            System.err.println(e.getMessage());
             System.err.println("  Убедитесь, что PostgreSQL запущен и база данных создана.");
         } finally {
-            scanner.close();
+            inputReader.close();
         }
+    }
+
+    private static Menu createMenu(DatabaseManager dbManager, InputReader inputReader) {
+        BuyerRepository buyerRepo = new BuyerRepository(dbManager);
+        CarRepository carRepo = new CarRepository(dbManager);
+        OrderRepository orderRepo = new OrderRepository(dbManager);
+
+        BuyerService buyerService = new BuyerService(buyerRepo);
+        CarService carService = new CarService(carRepo);
+        OrderService orderService = new OrderService(orderRepo, buyerRepo, carRepo);
+
+        return new Menu(buyerService, carService, orderService, inputReader);
     }
 }

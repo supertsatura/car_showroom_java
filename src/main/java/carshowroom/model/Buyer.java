@@ -5,6 +5,7 @@ import carshowroom.model.enums.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+
 public class Buyer {
     private int buyerId;
     private String buyerSurname;
@@ -19,9 +20,9 @@ public class Buyer {
     private CarCondition buyerPreferredCondition;
     private CarCompletion buyerPreferredCompletion;
     private CarColor buyerPreferredColor;
-    private LocalDate buyerCarReleaseDate;
-    private Integer buyerMaxMileage;
-    private BigDecimal buyerMaxPrice;
+    private LocalDate buyerPreferredCarReleaseDate;
+    private Integer buyerPreferredCarMaxMileage;
+    private BigDecimal buyerPreferredCarMaxPrice;
 
     public Buyer() {
     }
@@ -139,33 +140,27 @@ public class Buyer {
         this.buyerPreferredColor = buyerPreferredColor;
     }
 
-    public LocalDate getBuyerCarReleaseDate() {
-        return buyerCarReleaseDate;
+    public LocalDate getBuyerPreferredCarReleaseDate() {
+        return buyerPreferredCarReleaseDate;
     }
 
-    public void setBuyerCarReleaseDate(LocalDate buyerCarReleaseDate) {
-        this.buyerCarReleaseDate = buyerCarReleaseDate;
+    public void setBuyerPreferredCarReleaseDate(LocalDate buyerPreferredCarReleaseDate) {
+        this.buyerPreferredCarReleaseDate = buyerPreferredCarReleaseDate;
     }
 
-    public Integer getBuyerMaxMileage() {
-        return buyerMaxMileage;
+    public Integer getBuyerPreferredCarMaxMileage() {
+        return buyerPreferredCarMaxMileage;
     }
 
-    public void setBuyerMaxMileage(Integer buyerMaxMileage) {
-        this.buyerMaxMileage = buyerMaxMileage;
+    public void setBuyerPreferredCarMaxMileage(Integer buyerPreferredCarMaxMileage) {
+        this.buyerPreferredCarMaxMileage = buyerPreferredCarMaxMileage;
     }
 
-    public BigDecimal getBuyerMaxPrice() {
-        return buyerMaxPrice;
+    public BigDecimal getBuyerPreferredCarMaxPrice() {
+        return buyerPreferredCarMaxPrice;
     }
 
-    public void setBuyerMaxPrice(BigDecimal buyerMaxPrice) {
-        this.buyerMaxPrice = buyerMaxPrice;
-    }
-
-    @Override
-    public String toString() {
-        return buyerSurname + " " + buyerName +
-                (buyerPatronymic != null ? " " + buyerPatronymic : "") + " | Тел: " + buyerTel;
+    public void setBuyerPreferredCarMaxPrice(BigDecimal buyerPreferredCarMaxPrice) {
+        this.buyerPreferredCarMaxPrice = buyerPreferredCarMaxPrice;
     }
 }

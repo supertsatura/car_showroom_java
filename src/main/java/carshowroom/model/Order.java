@@ -5,6 +5,7 @@ import carshowroom.model.enums.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+
 public class Order {
     private int orderId;
     private int buyerId;

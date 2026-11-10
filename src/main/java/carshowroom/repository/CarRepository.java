@@ -6,12 +6,11 @@ import carshowroom.model.Car;
 import carshowroom.model.enums.*;
 import carshowroom.util.DatabaseManager;
 
-import java.math.BigDecimal;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 
 public class CarRepository implements Repository<Car> {
     private final DatabaseManager dbManager;

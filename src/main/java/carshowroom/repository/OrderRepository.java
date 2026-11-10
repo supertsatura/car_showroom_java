@@ -7,12 +7,11 @@ import carshowroom.model.OrderView;
 import carshowroom.model.enums.OrderStatus;
 import carshowroom.util.DatabaseManager;
 
-import java.math.BigDecimal;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 
 public class OrderRepository implements Repository<Order> {
     private final DatabaseManager dbManager;
@@ -51,8 +50,8 @@ public class OrderRepository implements Repository<Order> {
                 OrderView v = new OrderView();
                 v.setOrderId(rs.getInt("order_id"));
                 v.setOrderStatus(OrderStatus.fromValue(rs.getString("order_status")));
-                Date od = rs.getDate("order_date");
-                if (od != null) v.setOrderDate(od.toLocalDate());
+                Date orderDate = rs.getDate("order_date");
+                if (orderDate != null) v.setOrderDate(orderDate.toLocalDate());
                 v.setOrderSum(rs.getBigDecimal("order_sum"));
                 v.setBuyerId(rs.getInt("buyer_id"));
                 v.setBuyerSurname(rs.getString("buyer_surname"));

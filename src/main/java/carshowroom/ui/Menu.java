@@ -2,35 +2,36 @@ package carshowroom.ui;
 
 import carshowroom.model.Buyer;
 import carshowroom.model.Car;
+import carshowroom.model.Order;
 import carshowroom.model.OrderView;
 import carshowroom.model.enums.CarBodyType;
 import carshowroom.model.enums.CarCondition;
 import carshowroom.service.BuyerService;
 import carshowroom.service.CarService;
 import carshowroom.service.OrderService;
+import carshowroom.util.InputReader;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Optional;
+
 
 public class Menu {
+
     private final BuyerService buyerService;
     private final CarService carService;
     private final OrderService orderService;
-    private final Scanner scanner;
+    private final InputReader inputReader;
 
-    public Menu(BuyerService buyerService, CarService carService, OrderService orderService, Scanner scanner) {
+    public Menu(BuyerService buyerService, CarService carService, OrderService orderService, InputReader inputReader) {
         this.buyerService = buyerService;
         this.carService = carService;
         this.orderService = orderService;
-        this.scanner = scanner;
+        this.inputReader = inputReader;
     }
 
     public void showMainMenu() {
         boolean running = true;
+
         while (running) {
             System.out.println();
             System.out.println("================================================================================");
@@ -44,32 +45,33 @@ public class Menu {
             System.out.println("  6. Экспорт данных");
             System.out.println("  0. Выход");
             System.out.println("================================================================================");
-            System.out.print("Выберите действие: ");
 
-            String input = scanner.nextLine().trim();
+            int input = inputReader.readPositiveInt("Выберите действие: ");
+
             try {
                 switch (input) {
-                    case "1" -> showBuyersMenu();
-                    case "2" -> showCarsMenu();
-                    case "3" -> showOrdersMenu();
-                    case "4" -> showFilterMenu();
-                    case "5" -> showStatistics();
-                    case "6" -> System.out.println("  [Пока что не реализовано]");
-                    case "0" -> {
+                    case 1 -> showBuyersMenu();
+                    case 2 -> showCarsMenu();
+                    case 3 -> showOrdersMenu();
+                    case 4 -> showFilterMenu();
+                    case 5 -> showStatistics();
+                    case 6 -> System.out.println("  [Пока что не реализовано]");
+                    case 0 -> {
                         running = false;
                         System.out.println("Выход из программы...");
                     }
                     default -> System.out.println("   Неверный ввод. Выберите число от 0 до 7.");
                 }
             } catch (Exception e) {
-                System.out.println("   Ошибка: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
 
-    // 1. Покупатели
+    // =============================================== ПОКУПАТЕЛИ ================================================
     private void showBuyersMenu() {
         boolean back = false;
+
         while (!back) {
             System.out.println();
             System.out.println("--- Покупатели ---");
@@ -80,121 +82,191 @@ public class Menu {
             System.out.println("  5. Изменить покупателя");
             System.out.println("  6. Удалить покупателя");
             System.out.println("  0. Назад в главное меню");
-            System.out.print("Выберите действие: ");
 
-            String input = scanner.nextLine().trim();
+            int input = inputReader.readPositiveInt("Выберите действие: ");
+
             try {
                 switch (input) {
-                    case "1" -> printAllBuyers();
-                    case "2" -> findBuyerById();
-                    case "3" -> searchBuyersByBrand();
-                    case "4" -> createBuyer();
-                    case "5" -> updateBuyer();
-                    case "6" -> deleteBuyer();
-                    case "0" -> back = true;
+                    case 1 -> printAllBuyers();
+                    case 2 -> findBuyerById();
+                    case 3 -> searchBuyersByBrand();
+                    case 4 -> createBuyer();
+                    case 5 -> updateBuyer();
+                    case 6 -> deleteBuyer();
+                    case 0 -> back = true;
                     default -> System.out.println("  Неверный ввод.");
                 }
             } catch (Exception e) {
-                System.out.println("  Ошибка: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
 
     private void printAllBuyers() {
-        System.out.println("\n--- Список покупателей ---");
+        System.out.println("--- Список покупателей ---");
+
         List<Buyer> buyers = buyerService.getAllBuyers();
+
         if (buyers.isEmpty()) {
             System.out.println("  Список покупателей пуст.");
             return;
         }
-        System.out.printf("  %-5s %-20s %-20s %-20s %-10s %-15s %-15s%n",
-                "ID", "Фамилия", "Имя", "Отчество", "Телефон", "Предп. бренд", "Предп. марка");
-        System.out.println("  ------------------------------------------------------------------------------------------------------------");
+
+        System.out.printf("  %-5s %-20s %-20s %-20s %-15s %-20s %-25s %-20s %-15s %-20s %-20s %-20s %-20s %-20s %-20s %-15s%n",
+                "ID", "Фамилия", "Имя", "Отчество", "Телефон", "Марка", "Модель", "Кузов", "Привод", "Трансмиссия", "Состояние", "Комплектация", "Цвет", "Год выпуска", "Пробег", "Бюджет (руб.)");
+        System.out.println("  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+
         for (Buyer b : buyers) {
-            System.out.printf("  %-5d %-20s %-20s %-20s %-10s %-15s %-15s%n",
+            System.out.printf("  %-5d %-20s %-20s %-20s %-15s %-20s %-25s %-20s %-15s %-20s %-20s %-20s %-20s %-20s %-20s %-15s%n",
                     b.getBuyerId(),
                     b.getBuyerSurname(),
                     b.getBuyerName(),
                     b.getBuyerPatronymic() != null ? b.getBuyerPatronymic() : "-",
                     b.getBuyerTel(),
                     b.getBuyerPreferredBrand() != null ? b.getBuyerPreferredBrand() : "-",
-                    b.getBuyerPreferredModel() != null ? b.getBuyerPreferredModel() : "-");
+                    b.getBuyerPreferredModel() != null ? b.getBuyerPreferredModel() : "-",
+                    b.getBuyerPreferredBodyType() != null ? b.getBuyerPreferredBodyType().getValue() : "-",
+                    b.getBuyerPreferredWheelDrive() != null ? b.getBuyerPreferredWheelDrive().getValue() : "-",
+                    b.getBuyerPreferredGearbox() != null ? b.getBuyerPreferredGearbox().getValue() : "-",
+                    b.getBuyerPreferredCondition() != null ? b.getBuyerPreferredCondition().getValue() : "-",
+                    b.getBuyerPreferredCompletion() != null ? b.getBuyerPreferredCompletion().getValue() : "-",
+                    b.getBuyerPreferredColor() != null ? b.getBuyerPreferredColor().getValue() : "-",
+                    b.getBuyerPreferredCarReleaseDate() != null ? b.getBuyerPreferredCarReleaseDate().toString() : "-",
+                    b.getBuyerPreferredCarMaxMileage() != null ? b.getBuyerPreferredCarMaxMileage().toString() : "-",
+                    b.getBuyerPreferredCarMaxPrice() != null ? b.getBuyerPreferredCarMaxPrice().toString() : "-");
         }
     }
 
     private void findBuyerById() {
-        System.out.print("  Введите ID покупателя: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
-        buyerService.getBuyerById(id)
-                .ifPresentOrElse(
-                        b -> System.out.println("  Найден: " + b),
-                        () -> System.out.println("  Покупатель с ID " + id + " не найден.")
-                );
+        int id = inputReader.readPositiveInt("  Введите ID покупателя: ");
+        Optional<Buyer> optBuyer = buyerService.getBuyerById(id);
+
+        if (optBuyer.isEmpty()) {
+            System.out.println("  Покупатель с ID " + id + " не найден.");
+            return;
+        }
+
+        Buyer b = optBuyer.get();
+
+        System.out.println("  Найден покупатель: ");
+        System.out.printf("  %-5s %-20s %-20s %-20s %-15s %-20s %-25s %-20s %-15s %-20s %-20s %-20s %-20s %-20s %-20s %-15s%n",
+                "ID", "Фамилия", "Имя", "Отчество", "Телефон", "Марка", "Модель", "Кузов", "Привод", "Трансмиссия", "Состояние", "Комплектация", "Цвет", "Год выпуска", "Пробег", "Бюджет (руб.)");
+        System.out.println("  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.printf("  %-5d %-20s %-20s %-20s %-15s %-20s %-25s %-20s %-15s %-20s %-20s %-20s %-20s %-20s %-20s %-15s%n",
+                b.getBuyerId(),
+                b.getBuyerSurname(),
+                b.getBuyerName(),
+                b.getBuyerPatronymic() != null ? b.getBuyerPatronymic() : "-",
+                b.getBuyerTel(),
+                b.getBuyerPreferredBrand() != null ? b.getBuyerPreferredBrand() : "-",
+                b.getBuyerPreferredModel() != null ? b.getBuyerPreferredModel() : "-",
+                b.getBuyerPreferredBodyType() != null ? b.getBuyerPreferredBodyType().getValue() : "-",
+                b.getBuyerPreferredWheelDrive() != null ? b.getBuyerPreferredWheelDrive().getValue() : "-",
+                b.getBuyerPreferredGearbox() != null ? b.getBuyerPreferredGearbox().getValue() : "-",
+                b.getBuyerPreferredCondition() != null ? b.getBuyerPreferredCondition().getValue() : "-",
+                b.getBuyerPreferredCompletion() != null ? b.getBuyerPreferredCompletion().getValue() : "-",
+                b.getBuyerPreferredColor() != null ? b.getBuyerPreferredColor().getValue() : "-",
+                b.getBuyerPreferredCarReleaseDate() != null ? b.getBuyerPreferredCarReleaseDate().toString() : "-",
+                b.getBuyerPreferredCarMaxMileage() != null ? b.getBuyerPreferredCarMaxMileage().toString() : "-",
+                b.getBuyerPreferredCarMaxPrice() != null ? b.getBuyerPreferredCarMaxPrice().toString() : "-");
     }
 
     private void searchBuyersByBrand() {
-        System.out.print("  Введите предпочитаемый бренд: ");
-        String brand = scanner.nextLine().trim();
+        String brand = inputReader.readRequiredString("  Введите предпочитаемую марку: ");
         List<Buyer> buyers = buyerService.getBuyersByPreferredBrand(brand);
+
         if (buyers.isEmpty()) {
-            System.out.println("  Покупатели с предпочитаемым брендом '" + brand + "' не найдены.");
+            System.out.println("  Покупатели с предпочитаемой маркой '" + brand + "' не найдены.");
         } else {
             System.out.println("  Найдено покупателей: " + buyers.size());
+            System.out.println();
+            System.out.printf("  %-5s %-20s %-20s %-20s %-15s %-20s %-25s %-20s %-15s %-20s %-20s %-20s %-20s %-20s %-20s %-15s%n",
+                    "ID", "Фамилия", "Имя", "Отчество", "Телефон", "Марка", "Модель", "Кузов", "Привод", "Трансмиссия", "Состояние", "Комплектация", "Цвет", "Год выпуска", "Пробег", "Бюджет (руб.)");
+            System.out.println("  ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
             for (Buyer b : buyers) {
-                System.out.println("  - " + b);
+                System.out.printf("  %-5d %-20s %-20s %-20s %-15s %-20s %-25s %-20s %-15s %-20s %-20s %-20s %-20s %-20s %-20s %-15s%n",
+                        b.getBuyerId(),
+                        b.getBuyerSurname(),
+                        b.getBuyerName(),
+                        b.getBuyerPatronymic() != null ? b.getBuyerPatronymic() : "-",
+                        b.getBuyerTel(),
+                        b.getBuyerPreferredBrand() != null ? b.getBuyerPreferredBrand() : "-",
+                        b.getBuyerPreferredModel() != null ? b.getBuyerPreferredModel() : "-",
+                        b.getBuyerPreferredBodyType() != null ? b.getBuyerPreferredBodyType().getValue() : "-",
+                        b.getBuyerPreferredWheelDrive() != null ? b.getBuyerPreferredWheelDrive().getValue() : "-",
+                        b.getBuyerPreferredGearbox() != null ? b.getBuyerPreferredGearbox().getValue() : "-",
+                        b.getBuyerPreferredCondition() != null ? b.getBuyerPreferredCondition().getValue() : "-",
+                        b.getBuyerPreferredCompletion() != null ? b.getBuyerPreferredCompletion().getValue() : "-",
+                        b.getBuyerPreferredColor() != null ? b.getBuyerPreferredColor().getValue() : "-",
+                        b.getBuyerPreferredCarReleaseDate() != null ? b.getBuyerPreferredCarReleaseDate().toString() : "-",
+                        b.getBuyerPreferredCarMaxMileage() != null ? b.getBuyerPreferredCarMaxMileage().toString() : "-",
+                        b.getBuyerPreferredCarMaxPrice() != null ? b.getBuyerPreferredCarMaxPrice().toString() : "-");
             }
         }
     }
 
     private void createBuyer() {
-        System.out.println("\n--- Добавление покупателя ---");
+        System.out.println("--- Добавление покупателя ---");
+
         Buyer b = new Buyer();
-        b.setBuyerSurname(readRequiredString("  Фамилия: "));
-        b.setBuyerName(readRequiredString("  Имя: "));
-        System.out.print("  Отчество (Enter — пропустить): ");
-        String p = scanner.nextLine().trim();
-        b.setBuyerPatronymic(p.isEmpty() ? null : p);
-        b.setBuyerTel(readPhone());
-        System.out.print("  Предпочитаемый бренд авто (Enter — пропустить): ");
-        String pref_brand = scanner.nextLine().trim();
-        b.setBuyerPreferredBrand(pref_brand.isEmpty() ? null : pref_brand);
-        System.out.print("  Предпочитаемая модель авто (Enter — пропустить): ");
-        String pref_model = scanner.nextLine().trim();
-        b.setBuyerPreferredModel(pref_model.isEmpty() ? null : pref_model);
+        b.setBuyerSurname(inputReader.readRequiredString("  Фамилия: "));
+        b.setBuyerName(inputReader.readRequiredString("  Имя: "));
+        b.setBuyerPatronymic(inputReader.readNonRequiredString("  Отчество (Enter — пропустить): "));
+        b.setBuyerTel(inputReader.readRequiredPhone());
+        System.out.println("  Введите предпочитаемые характеристики  ");
+        b.setBuyerPreferredBrand(inputReader.readNonRequiredString("  Марка (Enter — пропустить): "));
+        b.setBuyerPreferredModel(inputReader.readNonRequiredString("  Модель (Enter — пропустить): "));
+        b.setBuyerPreferredBodyType(inputReader.readEnum("  Тип Кузова (Хэтчбек/Седан/Купе/Кабриолет/Универсал/Внедорожник/Кроссовер/Вэн) (Enter — пропустить): ", carshowroom.model.enums.CarBodyType.class, false));
+        b.setBuyerPreferredWheelDrive(inputReader.readEnum("  Привод (Передний/Задний/Полный) (Enter — пропустить): ", carshowroom.model.enums.CarWheelDrive.class, false));
+        b.setBuyerPreferredGearbox(inputReader.readEnum("  Трансмиссия (АКПП/МКПП) (Enter — пропустить): ", carshowroom.model.enums.CarGearbox.class, false));
+        b.setBuyerPreferredCondition(inputReader.readEnum("  Состояние (Новый/Б/У) (Enter — пропустить): ", carshowroom.model.enums.CarCondition.class, false));
+        b.setBuyerPreferredCompletion(inputReader.readEnum("  Комплектация (Базовая/Средняя/Максимальная) (Enter — пропустить): ", carshowroom.model.enums.CarCompletion.class, false));
+        b.setBuyerPreferredColor(inputReader.readEnum("  Цвет (Белый/Серый/Черный/Синий/Красный/Зеленый/Желтый/Оранжевый/Фиолетовый) (Enter — пропустить): ", carshowroom.model.enums.CarColor.class, false));
+        b.setBuyerPreferredCarReleaseDate(inputReader.readNonRequiredDate());
+        b.setBuyerPreferredCarMaxMileage(inputReader.readOptionalPositiveInt());
+        b.setBuyerPreferredCarMaxPrice(inputReader.readBigDecimal("  Цена в рублях (Enter — пропустить): "));
         buyerService.createBuyer(b);
+
         System.out.println("  Покупатель добавлен. ID: " + b.getBuyerId());
     }
 
     private void updateBuyer() {
-        System.out.print("  Введите ID покупателя для изменения: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
+        int id = inputReader.readPositiveInt("  Введите ID покупателя для изменения: ");
+
         buyerService.getBuyerById(id).ifPresentOrElse(b -> {
-            System.out.println("  Текущие данные: " + b);
-            b.setBuyerSurname(readRequiredString("  Новая фамилия [" + b.getBuyerSurname() + "]: ", b.getBuyerSurname()));
-            b.setBuyerName(readRequiredString("  Новое имя [" + b.getBuyerName() + "]: ", b.getBuyerName()));
-            System.out.print("  Новое отчество [" + (b.getBuyerPatronymic() != null ? b.getBuyerPatronymic() : "-") + "]: ");
-            String p = scanner.nextLine().trim();
-            if (!p.isEmpty()) b.setBuyerPatronymic(p);
-            b.setBuyerTel(readPhone());
+            b.setBuyerSurname(inputReader.readNonRequiredString("  Новая фамилия [" + b.getBuyerSurname() + "]: ", b.getBuyerSurname()));
+            b.setBuyerName(inputReader.readNonRequiredString("  Новое имя [" + b.getBuyerName() + "]: ", b.getBuyerName()));
+            b.setBuyerPatronymic(inputReader.readNonRequiredString("  Новое отчество [" + b.getBuyerPatronymic() + "]: ", b.getBuyerPatronymic()));
+            b.setBuyerTel(inputReader.readNonRequiredPhone("  Новый телефон [" + b.getBuyerTel() + "]: ", b.getBuyerTel()));
+            b.setBuyerPreferredBrand(inputReader.readNonRequiredString("  Новая марка [" + b.getBuyerPreferredBrand() + "]: ", b.getBuyerPreferredBrand()));
+            b.setBuyerPreferredModel(inputReader.readNonRequiredString("  Новая модель [" + b.getBuyerPreferredModel() + "]: ", b.getBuyerPreferredModel()));
+            b.setBuyerPreferredBodyType(inputReader.readEnum("  Новый тип кузова (Хэтчбек/Седан/Купе/Кабриолет/Универсал/Внедорожник/Кроссовер/Вэн) [" + b.getBuyerPreferredBodyType() + "]: ", carshowroom.model.enums.CarBodyType.class, false));
+            b.setBuyerPreferredWheelDrive(inputReader.readEnum("  Новый привод (Передний/Задний/Полный) [" + b.getBuyerPreferredWheelDrive() + "]: ", carshowroom.model.enums.CarWheelDrive.class, false));
+            b.setBuyerPreferredGearbox(inputReader.readEnum("  Новая трансмиссия (АКПП/МКПП) [" + b.getBuyerPreferredGearbox() + "]: ", carshowroom.model.enums.CarGearbox.class, false));
+            b.setBuyerPreferredCondition(inputReader.readEnum("  Новое состояние (Новый/Б/У) [" + b.getBuyerPreferredCondition() + "]: ", carshowroom.model.enums.CarCondition.class, false));
+            b.setBuyerPreferredCompletion(inputReader.readEnum("  Новая комплектация (Базовая/Средняя/Максимальная) [" + b.getBuyerPreferredCompletion() + "]: ", carshowroom.model.enums.CarCompletion.class, false));
+            b.setBuyerPreferredColor(inputReader.readEnum("  Новый цвет (Белый/Серый/Черный/Синий/Красный/Зеленый/Желтый/Оранжевый/Фиолетовый) [" + b.getBuyerPreferredColor() + "]: ", carshowroom.model.enums.CarColor.class, false));
+            b.setBuyerPreferredCarReleaseDate(inputReader.readNonRequiredDate("  Новый год выпуска [" + b.getBuyerPreferredCarReleaseDate() + "]: ", b.getBuyerPreferredCarReleaseDate()));
+            b.setBuyerPreferredCarMaxMileage(inputReader.readOptionalPositiveInt("  Новый пробег в км [" + b.getBuyerPreferredCarMaxMileage() + "]: ", b.getBuyerPreferredCarMaxMileage()));
+            b.setBuyerPreferredCarMaxPrice(inputReader.readBigDecimal("  Новая цена в рублях [" + b.getBuyerPreferredCarMaxPrice() + "]: ", b.getBuyerPreferredCarMaxPrice()));
             buyerService.updateBuyer(b);
+
             System.out.println("  Покупатель обновлён.");
         }, () -> System.out.println("  Покупатель с ID " + id + " не найден."));
     }
 
     private void deleteBuyer() {
-        System.out.print("  Введите ID покупателя для удаления: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
-        try {
-            buyerService.deleteBuyer(id);
-            System.out.println("  Покупатель удалён.");
-        } catch (Exception e) {
-            System.out.println("  Х " + e.getMessage());
-        }
+        int id = inputReader.readPositiveInt("  Введите ID покупателя для удаления: ");
+
+        buyerService.deleteBuyer(id);
+
+        System.out.println("  Покупатель удалён.");
     }
 
-    // 2. Автомобили
+    // ============================================= АВТОМОБИЛИ ==================================================
     private void showCarsMenu() {
         boolean back = false;
+
         while (!back) {
             System.out.println();
             System.out.println("--- Автомобили ---");
@@ -207,39 +279,43 @@ public class Menu {
             System.out.println("  7. Изменить автомобиль");
             System.out.println("  8. Удалить автомобиль");
             System.out.println("  0. Назад в главное меню");
-            System.out.print("Выберите действие: ");
 
-            String input = scanner.nextLine().trim();
+            int input = inputReader.readPositiveInt("Выберите действие: ");
+
             try {
                 switch (input) {
-                    case "1" -> printAllCars();
-                    case "2" -> findCarById();
-                    case "3" -> searchCarsByBrand();
-                    case "4" -> searchCarsByCondition();
-                    case "5" -> searchCarsByBodyType();
-                    case "6" -> createCar();
-                    case "7" -> updateCar();
-                    case "8" -> deleteCar();
-                    case "0" -> back = true;
+                    case 1 -> printAllCars();
+                    case 2 -> findCarById();
+                    case 3 -> searchCarsByBrand();
+                    case 4 -> searchCarsByCondition();
+                    case 5 -> searchCarsByBodyType();
+                    case 6 -> createCar();
+                    case 7 -> updateCar();
+                    case 8 -> deleteCar();
+                    case 0 -> back = true;
                     default -> System.out.println("   Неверный ввод.");
                 }
             } catch (Exception e) {
-                System.out.println("  Ошибка: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
 
     private void printAllCars() {
-        System.out.println("\n--- Список автомобилей ---");
+        System.out.println("--- Список автомобилей ---");
+
         List<Car> cars = carService.getAllCars();
+
         if (cars.isEmpty()) {
             System.out.println("  Список автомобилей пуст.");
             return;
         }
+
         System.out.printf("  %-5s %-12s %-12s %-12s %-10s %-8s %-12s %-10s %-8s %-12s %-10s %-8s %-6s %-12s%n",
                 "ID", "Бренд", "Модель", "Год", "Состояние", "Пробег", "Кузов", "Привод", "КПП",
                 "Комплект.", "Цвет", "Объём", "Л.С.", "Цена");
         System.out.println("  -----------------------------------------------------------------------------------------------------------------------------------------------------");
+
         for (Car c : cars) {
             System.out.printf("  %-5d %-12s %-12s %-12s %-10s %-8d %-12s %-10s %-8s %-12s %-10s %-8s %-6d %-12s%n",
                     c.getCarId(), c.getCarBrand(), c.getCarModel(),
@@ -253,19 +329,17 @@ public class Menu {
     }
 
     private void findCarById() {
-        System.out.print("  Введите ID автомобиля: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
-        carService.getCarById(id)
-                .ifPresentOrElse(
-                        c -> System.out.println("  Найден: " + c),
-                        () -> System.out.println("  Автомобиль с ID " + id + " не найден.")
-                );
+        int id = inputReader.readPositiveInt("  Введите ID автомобиля: ");
+
+        carService.getCarById(id).ifPresentOrElse(
+                c -> System.out.println("  Найден: " + c),
+                () -> System.out.println("  Автомобиль с ID " + id + " не найден."));
     }
 
     private void searchCarsByBrand() {
-        System.out.print("  Введите бренд: ");
-        String brand = scanner.nextLine().trim();
+        String brand = inputReader.readRequiredString("  Введите бренд: ");
         List<Car> cars = carService.getCarsByBrand(brand);
+
         if (cars.isEmpty()) {
             System.out.println("  Автомобили бренда '" + brand + "' не найдены.");
         } else {
@@ -277,8 +351,9 @@ public class Menu {
     }
 
     private void searchCarsByCondition() {
-        CarCondition condition = readEnum("  Введите состояние (Новый/Б/У): ", CarCondition.class);
+        CarCondition condition = inputReader.readEnum("  Введите состояние (Новый/Б/У): ", CarCondition.class, true);
         List<Car> cars = carService.getCarsByCondition(condition);
+
         if (cars.isEmpty()) {
             System.out.println("  Автомобили с состоянием '" + condition.getValue() + "' не найдены.");
         } else {
@@ -290,8 +365,9 @@ public class Menu {
     }
 
     private void searchCarsByBodyType() {
-        CarBodyType bodyType = readEnum("  Введите тип кузова: ", CarBodyType.class);
+        CarBodyType bodyType = inputReader.readEnum("  Введите тип кузова: ", CarBodyType.class, true);
         List<Car> cars = carService.getCarsByBodyType(bodyType);
+
         if (cars.isEmpty()) {
             System.out.println("  Автомобили с типом кузова '" + bodyType.getValue() + "' не найдены.");
         } else {
@@ -303,64 +379,66 @@ public class Menu {
     }
 
     private void createCar() {
-        System.out.println("\n--- Добавление автомобиля ---");
+        System.out.println("--- Добавление автомобиля ---");
+
         Car c = new Car();
-        c.setCarBrand(readRequiredString("  Бренд: "));
-        c.setCarModel(readRequiredString("  Модель: "));
-        c.setCarReleaseDate(readDate());
-        c.setCarCondition(readEnum("  Состояние (Новый/Б/У): ", carshowroom.model.enums.CarCondition.class));
-        c.setCarMileage(readPositiveInt("  Пробег (км): "));
-        c.setCarBodyType(readEnum("  Тип кузова (Хэтчбек/Седан/Купе/Кабриолет/Универсал/Внедорожник/Кроссовер/Вэн): ",
-                carshowroom.model.enums.CarBodyType.class));
-        c.setCarWheelDrive(readEnum("  Привод (Передний/Задний/Полный): ", carshowroom.model.enums.CarWheelDrive.class));
-        c.setCarGearbox(readEnum("  КПП (АКПП/МКПП): ", carshowroom.model.enums.CarGearbox.class));
-        c.setCarCompletion(readEnum("  Комплектация (Базовая/Средняя/Максимальная): ", carshowroom.model.enums.CarCompletion.class));
-        c.setCarColor(readEnum("  Цвет (Белый/Серый/Черный/Синий/Красный/Зеленый/Желтый/Оранжевый/Фиолетовый): ",
-                carshowroom.model.enums.CarColor.class));
-        c.setCarEngineCapacity(readBigDecimal("  Объём двигателя (л): "));
-        c.setCarHorsePower(readPositiveInt("  Мощность (л.с.): "));
-        c.setCarPrice(readBigDecimal("  Цена (руб.): "));
+        c.setCarBrand(inputReader.readRequiredString("  Марка: "));
+        c.setCarModel(inputReader.readRequiredString("  Модель: "));
+        c.setCarReleaseDate(inputReader.readDate());
+        c.setCarCondition(inputReader.readEnum("  Состояние (Новый/Б/У): ", carshowroom.model.enums.CarCondition.class, true));
+        c.setCarMileage(inputReader.readPositiveInt("  Пробег в км: "));
+        c.setCarBodyType(inputReader.readEnum("  Тип кузова (Хэтчбек/Седан/Купе/Кабриолет/Универсал/Внедорожник/Кроссовер/Вэн): ",
+                carshowroom.model.enums.CarBodyType.class, true));
+        c.setCarWheelDrive(inputReader.readEnum("  Привод (Передний/Задний/Полный): ", carshowroom.model.enums.CarWheelDrive.class, true));
+        c.setCarGearbox(inputReader.readEnum("  КПП (АКПП/МКПП): ", carshowroom.model.enums.CarGearbox.class, true));
+        c.setCarCompletion(inputReader.readEnum("  Комплектация (Базовая/Средняя/Максимальная): ", carshowroom.model.enums.CarCompletion.class, true));
+        c.setCarColor(inputReader.readEnum("  Цвет (Белый/Серый/Черный/Синий/Красный/Зеленый/Желтый/Оранжевый/Фиолетовый): ",
+                carshowroom.model.enums.CarColor.class, true));
+        c.setCarEngineCapacity(inputReader.readBigDecimal("  Объём двигателя: "));
+        c.setCarHorsePower(inputReader.readPositiveInt("  Мощность: "));
+        c.setCarPrice(inputReader.readBigDecimal("  Цена в рублях: "));
         carService.createCar(c);
+
         System.out.println("  Автомобиль добавлен. ID: " + c.getCarId());
     }
 
     private void updateCar() {
-        System.out.print("  Введите ID автомобиля для изменения: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
+        int id = inputReader.readPositiveInt("  Введите ID автомобиля для изменения: ");
+
         carService.getCarById(id).ifPresentOrElse(c -> {
             System.out.println("  Текущие данные: " + c);
-            c.setCarBrand(readRequiredString("  Новый бренд [" + c.getCarBrand() + "]: ", c.getCarBrand()));
-            c.setCarModel(readRequiredString("  Новая модель [" + c.getCarModel() + "]: ", c.getCarModel()));
-            c.setCarReleaseDate(readDate());
-            c.setCarCondition(readEnum("  Состояние: ", carshowroom.model.enums.CarCondition.class));
-            c.setCarMileage(readNonNegativeInt("  Пробег: "));
-            c.setCarBodyType(readEnum("  Тип кузова: ", carshowroom.model.enums.CarBodyType.class));
-            c.setCarWheelDrive(readEnum("  Привод: ", carshowroom.model.enums.CarWheelDrive.class));
-            c.setCarGearbox(readEnum("  КПП: ", carshowroom.model.enums.CarGearbox.class));
-            c.setCarCompletion(readEnum("  Комплектация: ", carshowroom.model.enums.CarCompletion.class));
-            c.setCarColor(readEnum("  Цвет: ", carshowroom.model.enums.CarColor.class));
-            c.setCarEngineCapacity(readBigDecimal("  Объём двигателя: "));
-            c.setCarHorsePower(readNonNegativeInt("  Мощность: "));
-            c.setCarPrice(readBigDecimal("  Цена: "));
+
+            c.setCarBrand(inputReader.readNonRequiredString("  Новая марка [" + c.getCarBrand() + "]: ", c.getCarBrand()));
+            c.setCarModel(inputReader.readNonRequiredString("  Новая модель [" + c.getCarModel() + "]: ", c.getCarModel()));
+            c.setCarReleaseDate(inputReader.readDate());
+            c.setCarCondition(inputReader.readEnum("  Состояние: ", carshowroom.model.enums.CarCondition.class, true));
+            c.setCarMileage(inputReader.readPositiveInt("  Пробег: "));
+            c.setCarBodyType(inputReader.readEnum("  Тип кузова: ", carshowroom.model.enums.CarBodyType.class, true));
+            c.setCarWheelDrive(inputReader.readEnum("  Привод: ", carshowroom.model.enums.CarWheelDrive.class, true));
+            c.setCarGearbox(inputReader.readEnum("  КПП: ", carshowroom.model.enums.CarGearbox.class, true));
+            c.setCarCompletion(inputReader.readEnum("  Комплектация: ", carshowroom.model.enums.CarCompletion.class, true));
+            c.setCarColor(inputReader.readEnum("  Цвет: ", carshowroom.model.enums.CarColor.class, true));
+            c.setCarEngineCapacity(inputReader.readBigDecimal("  Объём двигателя: "));
+            c.setCarHorsePower(inputReader.readPositiveInt("  Мощность: "));
+            c.setCarPrice(inputReader.readBigDecimal("  Цена: "));
             carService.updateCar(c);
+
             System.out.println("  Автомобиль обновлён.");
         }, () -> System.out.println("  Автомобиль с ID " + id + " не найден."));
     }
 
     private void deleteCar() {
-        System.out.print("  Введите ID автомобиля для удаления: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
-        try {
-            carService.deleteCar(id);
-            System.out.println("  Автомобиль удалён.");
-        } catch (Exception e) {
-            System.out.println("  Х " + e.getMessage());
-        }
+        int id = inputReader.readPositiveInt("  Введите ID автомобиля для удаления: ");
+
+        carService.deleteCar(id);
+
+        System.out.println("  Автомобиль удалён.");
     }
 
-    // 3. Заказы
+    // ================================================ ЗАКАЗЫ ====================================================
     private void showOrdersMenu() {
         boolean back = false;
+
         while (!back) {
             System.out.println();
             System.out.println("--- Заказы ---");
@@ -370,35 +448,39 @@ public class Menu {
             System.out.println("  4. Изменить заказ");
             System.out.println("  5. Удалить заказ");
             System.out.println("  0. Назад в главное меню");
-            System.out.print("Выберите действие: ");
 
-            String input = scanner.nextLine().trim();
+            int input = inputReader.readPositiveInt("Выберите действие: ");
+
             try {
                 switch (input) {
-                    case "1" -> printAllOrders();
-                    case "2" -> findOrderById();
-                    case "3" -> createOrder();
-                    case "4" -> updateOrder();
-                    case "5" -> deleteOrder();
-                    case "0" -> back = true;
+                    case 1 -> printAllOrders();
+                    case 2 -> findOrderById();
+                    case 3 -> createOrder();
+                    case 4 -> updateOrder();
+                    case 5 -> deleteOrder();
+                    case 0 -> back = true;
                     default -> System.out.println("   Неверный ввод.");
                 }
             } catch (Exception e) {
-                System.out.println("  Ошибка: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
 
     private void printAllOrders() {
-        System.out.println("\n--- Список заказов ---");
+        System.out.println("--- Список заказов ---");
+
         List<OrderView> orders = orderService.getAllOrdersWithDetails();
+
         if (orders.isEmpty()) {
             System.out.println("  Список заказов пуст.");
             return;
         }
+
         System.out.printf("  %-5s %-12s %-30s %-12s %-8s %-20s %-12s %-12s%n",
                 "ID", "Статус", "Покупатель", "Телефон", "ID авто", "Автомобиль", "Дата", "Сумма");
         System.out.println("  ----------------------------------------------------------------------------------------------------------------------------");
+
         for (OrderView o : orders) {
             System.out.printf("  %-5d %-12s %-30s %-12s %-8d %-20s %-12s %-12s%n",
                     o.getOrderId(),
@@ -413,120 +495,121 @@ public class Menu {
     }
 
     private void findOrderById() {
-        System.out.print("  Введите ID заказа: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
-        orderService.getOrderById(id)
-                .ifPresentOrElse(
-                        o -> System.out.println("  Найден заказ ID=" + o.getOrderId() +
-                                ", покупатель ID=" + o.getBuyerId() +
-                                ", автомобиль ID=" + o.getCarId() +
-                                ", статус=" + o.getOrderStatus().getValue()),
-                        () -> System.out.println("  Заказ с ID " + id + " не найден.")
-                );
+        int id = inputReader.readPositiveInt("  Введите ID заказа: ");
+
+        orderService.getOrderById(id).ifPresentOrElse(
+                o -> System.out.println("  Найден заказ ID=" + o.getOrderId() +
+                        ", покупатель ID=" + o.getBuyerId() +
+                        ", автомобиль ID=" + o.getCarId() +
+                        ", статус=" + o.getOrderStatus().getValue()),
+                () -> System.out.println("  Заказ с ID " + id + " не найден."));
     }
 
     private void createOrder() {
-        System.out.println("\n--- Добавление заказа ---");
-        carshowroom.model.Order o = new carshowroom.model.Order();
-        o.setBuyerId(readPositiveInt("  ID покупателя: "));
-        o.setCarId(readPositiveInt("  ID автомобиля: "));
-        o.setOrderStatus(readEnum("  Статус (Ожидает/Подтверждён/Завершён/Отменён): ",
-                carshowroom.model.enums.OrderStatus.class));
-        o.setOrderDate(readDate());
-        o.setOrderSum(readBigDecimal("  Сумма заказа (руб.): "));
+        System.out.println("--- Добавление заказа ---");
+
+        Order o = new Order();
+        o.setBuyerId(inputReader.readPositiveInt("  ID покупателя: "));
+        o.setCarId(inputReader.readPositiveInt("  ID автомобиля: "));
+        o.setOrderStatus(inputReader.readEnum("  Статус (Ожидает/Подтверждён/Завершён/Отменён): ",
+                carshowroom.model.enums.OrderStatus.class, true));
+        o.setOrderDate(inputReader.readDate());
+        o.setOrderSum(inputReader.readBigDecimal("  Сумма заказа (руб.): "));
         orderService.createOrder(o);
+
         System.out.println("  Заказ добавлен. ID: " + o.getOrderId());
     }
 
     private void updateOrder() {
-        System.out.print("  Введите ID заказа для изменения: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
+        int id = inputReader.readPositiveInt("  Введите ID заказа для изменения: ");
+
         orderService.getOrderById(id).ifPresentOrElse(o -> {
             System.out.println("  Текущий заказ: ID=" + o.getOrderId() + ", статус=" + o.getOrderStatus().getValue());
-            o.setBuyerId(readPositiveInt("  ID покупателя: "));
-            o.setCarId(readPositiveInt("  ID автомобиля: "));
-            o.setOrderStatus(readEnum("  Статус: ", carshowroom.model.enums.OrderStatus.class));
-            o.setOrderDate(readDate());
-            o.setOrderSum(readBigDecimal("  Сумма: "));
+            o.setBuyerId(inputReader.readPositiveInt("  ID покупателя: "));
+            o.setCarId(inputReader.readPositiveInt("  ID автомобиля: "));
+            o.setOrderStatus(inputReader.readEnum("  Статус: ", carshowroom.model.enums.OrderStatus.class, true));
+            o.setOrderDate(inputReader.readDate());
+            o.setOrderSum(inputReader.readBigDecimal("  Сумма: "));
             orderService.updateOrder(o);
             System.out.println("  Заказ обновлён.");
         }, () -> System.out.println("  Заказ с ID " + id + " не найден."));
     }
 
     private void deleteOrder() {
-        System.out.print("  Введите ID заказа для удаления: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
-        try {
-            orderService.deleteOrder(id);
-            System.out.println("  Заказ удалён.");
-        } catch (Exception e) {
-            System.out.println("  Х " + e.getMessage());
-        }
+        int id = inputReader.readPositiveInt("  Введите ID заказа для изменения: ");
+
+        orderService.deleteOrder(id);
+
+        System.out.println("  Заказ удалён.");
     }
 
-    // 4. Фильтрация
+    // ================================================ ФИЛЬТРАЦИЯ ================================================
     private void showFilterMenu() {
         boolean back = false;
+
         while (!back) {
             System.out.println();
             System.out.println("--- Фильтрация ---");
             System.out.println("  1. Фильтрация автомобилей");
             System.out.println("  2. Фильтрация заказов");
             System.out.println("  0. Назад в главное меню");
-            System.out.print("Выберите действие: ");
 
-            String input = scanner.nextLine().trim();
+            int input = inputReader.readPositiveInt("Выберите действие: ");
+
             try {
                 switch (input) {
-                    case "1" -> showCarFilterMenu();
-                    case "2" -> showOrderFilterMenu();
-                    case "0" -> back = true;
-                    default  -> System.out.println("  Неверный ввод.");
+                    case 1 -> showCarFilterMenu();
+                    case 2 -> showOrderFilterMenu();
+                    case 0 -> back = true;
+                    default -> System.out.println("  Неверный ввод.");
                 }
             } catch (Exception e) {
-                System.out.println("  Х Ошибка: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
 
     private void showCarFilterMenu() {
         boolean back = false;
+
         while (!back) {
             System.out.println();
             System.out.println("--- Фильтрация автомобилей ---");
             System.out.println("  1. По году выпуска");
             System.out.println("  2. По пробегу");
             System.out.println("  0. Назад");
-            System.out.print("Выберите действие: ");
 
-            String input = scanner.nextLine().trim();
+            int input = inputReader.readPositiveInt("Выберите действие: ");
+
             try {
                 switch (input) {
-                    case "1" -> filterCarsByReleaseDate();
-                    case "2" -> filterCarsByMileage();
-                    case "0" -> back = true;
-                    default  -> System.out.println("   Неверный ввод.");
+                    case 1 -> filterCarsByReleaseDate();
+                    case 2 -> filterCarsByMileage();
+                    case 0 -> back = true;
+                    default -> System.out.println("   Неверный ввод.");
                 }
             } catch (Exception e) {
-                System.out.println("  Х Ошибка: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
 
     private void filterCarsByReleaseDate() {
-        System.out.println("\n--- Автомобили по году выпуска ---");
+        System.out.println("--- Автомобили по году выпуска ---");
+
         List<Car> cars = carService.getCarsSortedByReleaseDateDesc();
+
         if (cars.isEmpty()) {
             System.out.println("  Список пуст.");
             return;
         }
 
-        System.out.printf("  %-5s %-12s %-12s %-10s %-10s %-12s%n",
+        System.out.printf("  %-5s %-20s %-20s %-15s %-10s %-12s%n",
                 "ID", "Бренд", "Модель", "Год", "Пробег", "Цена");
-        System.out.println("  -------------------------------------------------------------");
+        System.out.println("  ------------------------------------------------------------------------------------------");
 
         for (Car c : cars) {
-            System.out.printf("  %-5d %-12s %-12s %-10s %-10d %-12s%n",
+            System.out.printf("  %-5s %-20s %-20s %-15s %-10s %-12s%n",
                     c.getCarId(),
                     c.getCarBrand(),
                     c.getCarModel(),
@@ -537,19 +620,21 @@ public class Menu {
     }
 
     private void filterCarsByMileage() {
-        System.out.println("\n--- Автомобили по пробегу ---");
+        System.out.println("--- Автомобили по пробегу ---");
+
         List<Car> cars = carService.getCarsSortedByMileageDesc();
+
         if (cars.isEmpty()) {
             System.out.println("  Список пуст.");
             return;
         }
 
-        System.out.printf("  %-5s %-12s %-12s %-10s %-10s %-12s%n",
+        System.out.printf("  %-5s %-20s %-20s %-15s %-10s %-12s%n",
                 "ID", "Бренд", "Модель", "Год", "Пробег", "Цена");
-        System.out.println("  -------------------------------------------------------------");
+        System.out.println("  ------------------------------------------------------------------------------------------");
 
         for (Car c : cars) {
-            System.out.printf("  %-5d %-12s %-12s %-10s %-10d %-12s%n",
+            System.out.printf("  %-5d %-20s %-20s %-15s %-10d %-12s%n",
                     c.getCarId(),
                     c.getCarBrand(),
                     c.getCarModel(),
@@ -561,42 +646,45 @@ public class Menu {
 
     private void showOrderFilterMenu() {
         boolean back = false;
+
         while (!back) {
             System.out.println();
             System.out.println("--- Фильтрация заказов ---");
             System.out.println("  1. По дате");
             System.out.println("  2. По сумме заказа");
             System.out.println("  0. Назад");
-            System.out.print("Выберите действие: ");
 
-            String input = scanner.nextLine().trim();
+            int input = inputReader.readPositiveInt("Выберите действие: ");
+
             try {
                 switch (input) {
-                    case "1" -> filterOrdersByDate();
-                    case "2" -> filterOrdersBySum();
-                    case "0" -> back = true;
-                    default  -> System.out.println("  Неверный ввод.");
+                    case 1 -> filterOrdersByDate();
+                    case 2 -> filterOrdersBySum();
+                    case 0 -> back = true;
+                    default -> System.out.println("  Неверный ввод.");
                 }
             } catch (Exception e) {
-                System.out.println("  Х Ошибка: " + e.getMessage());
+                System.out.println(e.getMessage());
             }
         }
     }
 
     private void filterOrdersByDate() {
-        System.out.println("\n--- Заказы по дате ---");
+        System.out.println("--- Заказы по дате ---");
+
         List<OrderView> orders = orderService.getOrdersSortedByDateDesc();
+
         if (orders.isEmpty()) {
             System.out.println("  Список пуст.");
             return;
         }
 
-        System.out.printf("  %-5s %-12s %-30s %-12s %-8s %-20s %-12s %-12s%n",
+        System.out.printf("  %-5s %-15s %-35s %-15s %-10s %-25s %-15s %-20s%n",
                 "ID", "Статус", "Покупатель", "Телефон", "ID авто", "Автомобиль", "Дата", "Сумма");
-        System.out.println("  ----------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------------------------------");
 
         for (OrderView o : orders) {
-            System.out.printf("  %-5d %-12s %-30s %-12s %-8d %-20s %-12s %-12s%n",
+            System.out.printf("  %-5s %-15s %-35s %-15s %-10s %-25s %-15s %-20s%n",
                     o.getOrderId(),
                     o.getOrderStatus().getValue(),
                     o.getBuyerFullName(),
@@ -609,19 +697,21 @@ public class Menu {
     }
 
     private void filterOrdersBySum() {
-        System.out.println("\n--- Заказы по сумме ---");
+        System.out.println("--- Заказы по сумме ---");
+
         List<OrderView> orders = orderService.getOrdersSortedBySumDesc();
+
         if (orders.isEmpty()) {
             System.out.println("  Список пуст.");
             return;
         }
 
-        System.out.printf("  %-5s %-12s %-30s %-12s %-8s %-20s %-12s %-12s%n",
+        System.out.printf("  %-5s %-15s %-35s %-15s %-10s %-25s %-15s %-20s%n",
                 "ID", "Статус", "Покупатель", "Телефон", "ID авто", "Автомобиль", "Дата", "Сумма");
-        System.out.println("  ----------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("  -----------------------------------------------------------------------------------------------------------------------------------------");
 
         for (OrderView o : orders) {
-            System.out.printf("  %-5d %-12s %-30s %-12s %-8d %-20s %-12s %-12s%n",
+            System.out.printf("  %-5s %-15s %-35s %-15s %-10s %-25s %-15s %-20s%n",
                     o.getOrderId(),
                     o.getOrderStatus().getValue(),
                     o.getBuyerFullName(),
@@ -633,9 +723,9 @@ public class Menu {
         }
     }
 
-    // 5. Статистика
+    // =============================================== СТАТИСТИКА =================================================
     private void showStatistics() {
-        System.out.println("\n--- Статистика ---");
+        System.out.println("--- Статистика ---");
         System.out.println("  1. Количество записей в таблице покупатели: " + buyerService.getBuyersCount());
         System.out.println("  2. Количество записей в таблице автомобили: " + carService.getCarsCount());
         System.out.println("  3. Количество записей в таблице заказы: " + orderService.getOrdersCount());
@@ -643,116 +733,5 @@ public class Menu {
         System.out.println("  5. Количество подтверждённых заказов: " + orderService.getOrdersCountByStatus(carshowroom.model.enums.OrderStatus.CONFIRMED));
         System.out.println("  6. Количество завершённых заказов: " + orderService.getOrdersCountByStatus(carshowroom.model.enums.OrderStatus.COMPLETED));
         System.out.println("  7. Количество отменённых заказов: " + orderService.getOrdersCountByStatus(carshowroom.model.enums.OrderStatus.CANCELLED));
-    }
-
-    // 6. Экспорт данных в Excel
-//    private void exportData() {
-//        System.out.println("\n--- Экспорт данных ---");
-//        System.out.print("  Введите путь для сохранения файла (например, data.xlsx): ");
-//        String filePath = scanner.nextLine().trim();
-//        if (filePath.isEmpty()) {
-//            filePath = "autosalon_data.xlsx";
-//        }
-//        try {
-//            ExcelExporter exporter = new ExcelExporter(buyerService, carService, orderService);
-//            exporter.exportToExcel(filePath);
-//            System.out.println("  Данные экспортированы в файл: " + filePath);
-//        } catch (Exception e) {
-//            System.out.println("  Х Ошибка экспорта: " + e.getMessage());
-//        }
-//    }
-
-    // Валидирующие функции
-    private String readRequiredString(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String s = scanner.nextLine().trim();
-            if (!s.isEmpty()) return s;
-            System.out.println("  Поле не может быть пустым.");
-        }
-    }
-
-    private String readRequiredString(String prompt, String defaultValue) {
-        System.out.print(prompt);
-        String s = scanner.nextLine().trim();
-        return s.isEmpty() ? defaultValue : s;
-    }
-
-    private String readPhone() {
-        while (true) {
-            System.out.print("  Телефон (формат XX-XX-XX): ");
-            String s = scanner.nextLine().trim();
-            if (s.matches("^\\d{2}-\\d{2}-\\d{2}$")) return s;
-            System.out.println("  Неверный формат. Пример: 77-77-77");
-        }
-    }
-
-    private LocalDate readDate() {
-        while (true) {
-            System.out.print("  Дата (ГГГГ-ММ-ДД): ");
-            String s = scanner.nextLine().trim();
-            try {
-                return LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE);
-            } catch (Exception e) {
-                System.out.println("   Неверный формат даты.");
-            }
-        }
-    }
-
-    private int readPositiveInt(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String s = scanner.nextLine().trim();
-            try {
-                int v = Integer.parseInt(s);
-                if (v > 0) return v;
-                System.out.println("  Число должно быть положительным.");
-            } catch (NumberFormatException e) {
-                System.out.println("  Введено не число.");
-            }
-        }
-    }
-
-    private int readNonNegativeInt(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String s = scanner.nextLine().trim();
-            try {
-                int v = Integer.parseInt(s);
-                if (v >= 0) return v;
-                System.out.println("  Число должно быть положительным.");
-            } catch (NumberFormatException e) {
-                System.out.println("  Введено не число.");
-            }
-        }
-    }
-
-    private BigDecimal readBigDecimal(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String s = scanner.nextLine().trim();
-            try {
-                return new BigDecimal(s);
-            } catch (NumberFormatException e) {
-                System.out.println("  Введено не число.");
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private <E extends Enum<E>> E readEnum(String prompt, Class<E> enumClass) {
-        while (true) {
-            System.out.print(prompt);
-            String s = scanner.nextLine().trim();
-            for (E e : enumClass.getEnumConstants()) {
-                try {
-                    String val = (String) e.getClass().getMethod("getValue").invoke(e);
-                    if (val.equalsIgnoreCase(s)) return e;
-                } catch (Exception ex) {
-                    if (e.name().equalsIgnoreCase(s)) return e;
-                }
-            }
-            System.out.println("  Неверное значение. Допустимые: " + Arrays.toString(enumClass.getEnumConstants()));
-        }
     }
 }

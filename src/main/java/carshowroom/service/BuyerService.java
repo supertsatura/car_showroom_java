@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+
 public class BuyerService {
     private final BuyerRepository repository;
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\d{2}-\\d{2}-\\d{2}$");
 
     public BuyerService(BuyerRepository repository) {
         this.repository = repository;
@@ -33,30 +33,29 @@ public class BuyerService {
     }
 
     public Buyer createBuyer(Buyer buyer) {
-        validatePhone(buyer.getBuyerTel());
-        validateName(buyer.getBuyerSurname(), "Фамилия");
-        validateName(buyer.getBuyerName(), "Имя");
+        List<Buyer> allBuyers = repository.findAll();
+        boolean telExists = allBuyers.stream().anyMatch(b -> b.getBuyerTel().equals(buyer.getBuyerTel()));
+
+        if (telExists) {
+            throw new BusinessException("Пользователь с номером " + buyer.getBuyerTel() + " уже существует");
+        }
+
         return repository.save(buyer);
     }
 
     public Buyer updateBuyer(Buyer buyer) {
-        validatePhone(buyer.getBuyerTel());
-        validateName(buyer.getBuyerSurname(), "Фамилия");
-        validateName(buyer.getBuyerName(), "Имя");
+        List<Buyer> allBuyers = repository.findAll();
+        boolean telExists = allBuyers.stream().anyMatch(
+                b -> b.getBuyerId() != buyer.getBuyerId() && b.getBuyerTel().equals(buyer.getBuyerTel()));
+
+        if (telExists) {
+            throw new BusinessException("Пользователь с номером " + buyer.getBuyerTel() + " уже существует");
+        }
+
         return repository.update(buyer);
     }
 
     public void deleteBuyer(int id) {
         repository.deleteById(id);
-    }
-
-    private void validatePhone(String tel) {
-        if (tel == null || !PHONE_PATTERN.matcher(tel).matches())
-            throw new BusinessException("Телефон должен быть в формате XX-XX-XX (например, 77-77-77)");
-    }
-
-    private void validateName(String name, String fieldName) {
-        if (name == null || name.length() < 2 || name.length() > 50)
-            throw new BusinessException(fieldName + " должна(-о) содержать от 2 до 50 символов");
     }
 }

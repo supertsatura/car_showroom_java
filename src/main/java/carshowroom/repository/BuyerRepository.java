@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+
 public class BuyerRepository implements Repository<Buyer> {
     private final DatabaseManager dbManager;
 
@@ -24,10 +25,9 @@ public class BuyerRepository implements Repository<Buyer> {
     public List<Buyer> findAll() {
         List<Buyer> buyers = new ArrayList<>();
         String sql = "SELECT * FROM buyers ORDER BY buyer_id";
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) buyers.add(mapRow(rs));
+        try (Connection conn = dbManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next())
+                buyers.add(mapRow(rs));
         } catch (SQLException e) {
             throw new DatabaseException("Ошибка получения списка покупателей: " + e.getMessage(), e);
         }
@@ -37,8 +37,7 @@ public class BuyerRepository implements Repository<Buyer> {
     @Override
     public Optional<Buyer> findById(int id) {
         String sql = "SELECT * FROM buyers WHERE buyer_id = ?";
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) return Optional.of(mapRow(rs));
@@ -51,8 +50,7 @@ public class BuyerRepository implements Repository<Buyer> {
     public List<Buyer> findByPreferredBrand(String brand) {
         List<Buyer> buyers = new ArrayList<>();
         String sql = "SELECT * FROM buyers WHERE buyer_preferred_brand = ? ORDER BY buyer_id";
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, brand);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) buyers.add(mapRow(rs));
@@ -64,9 +62,7 @@ public class BuyerRepository implements Repository<Buyer> {
 
     public long countAll() {
         String sql = "SELECT COUNT(*) FROM buyers";
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (Connection conn = dbManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) return rs.getLong(1);
         } catch (SQLException e) {
             throw new DatabaseException("Ошибка подсчёта покупателей: " + e.getMessage(), e);
@@ -83,8 +79,7 @@ public class BuyerRepository implements Repository<Buyer> {
                 "buyer_max_mileage, buyer_max_price) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?::car_body_type, ?::car_wheel_drive, ?::car_gearbox, " +
                 "?::car_condition, ?::car_completion, ?::car_color, ?, ?, ?) RETURNING buyer_id";
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = dbManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             setParams(stmt, buyer);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) buyer.setBuyerId(rs.getInt("buyer_id"));
@@ -105,9 +100,9 @@ public class BuyerRepository implements Repository<Buyer> {
                 "buyer_preferred_completion=?::car_completion, " +
                 "buyer_preferred_color=?::car_color, " +
                 "buyer_car_release_date=?, buyer_max_mileage=?, buyer_max_price=?, " +
-                "updated_at=CURRENT_TIMESTAMP WHERE buyer_id=?";
-        try (Connection conn = dbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                "updated_at=CURRENT_TIMESTAMP " +
+                "WHERE buyer_id=?";
+        try (Connection conn = dbManager.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             setParams(stmt, buyer);
             stmt.setInt(16, buyer.getBuyerId());
             if (stmt.executeUpdate() == 0)
@@ -156,13 +151,13 @@ public class BuyerRepository implements Repository<Buyer> {
         if (v != null) b.setBuyerPreferredColor(CarColor.fromValue(v));
 
         Date d = rs.getDate("buyer_car_release_date");
-        if (d != null) b.setBuyerCarReleaseDate(d.toLocalDate());
+        if (d != null) b.setBuyerPreferredCarReleaseDate(d.toLocalDate());
 
         int m = rs.getInt("buyer_max_mileage");
-        if (!rs.wasNull()) b.setBuyerMaxMileage(m);
+        if (!rs.wasNull()) b.setBuyerPreferredCarMaxMileage(m);
 
         BigDecimal p = rs.getBigDecimal("buyer_max_price");
-        if (!rs.wasNull()) b.setBuyerMaxPrice(p);
+        if (!rs.wasNull()) b.setBuyerPreferredCarMaxPrice(p);
 
         return b;
     }
@@ -172,9 +167,9 @@ public class BuyerRepository implements Repository<Buyer> {
         stmt.setString(2, b.getBuyerName());
         stmt.setString(4, b.getBuyerTel());
 
-        setStringOrNull(stmt,3, b.getBuyerPatronymic());
-        setStringOrNull(stmt,5, b.getBuyerPreferredBrand());
-        setStringOrNull(stmt,6, b.getBuyerPreferredModel());
+        setStringOrNull(stmt, 3, b.getBuyerPatronymic());
+        setStringOrNull(stmt, 5, b.getBuyerPreferredBrand());
+        setStringOrNull(stmt, 6, b.getBuyerPreferredModel());
 
         setEnum(stmt, 7, b.getBuyerPreferredBodyType());
         setEnum(stmt, 8, b.getBuyerPreferredWheelDrive());
@@ -183,9 +178,9 @@ public class BuyerRepository implements Repository<Buyer> {
         setEnum(stmt, 11, b.getBuyerPreferredCompletion());
         setEnum(stmt, 12, b.getBuyerPreferredColor());
 
-        setDate(stmt, 13, b.getBuyerCarReleaseDate());
-        setIntOrNull(stmt, 14, b.getBuyerMaxMileage());
-        setBigDecimalOrNull(stmt, 15, b.getBuyerMaxPrice());
+        setDate(stmt, 13, b.getBuyerPreferredCarReleaseDate());
+        setIntOrNull(stmt, 14, b.getBuyerPreferredCarMaxMileage());
+        setBigDecimalOrNull(stmt, 15, b.getBuyerPreferredCarMaxPrice());
     }
 
     private void setEnum(PreparedStatement stmt, int idx, Enum<?> e) throws SQLException {

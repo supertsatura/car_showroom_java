@@ -22,7 +22,8 @@ public enum CarBodyType {
     }
 
     public static CarBodyType fromValue(String v) {
-        for (CarBodyType t : values()) if (t.value.equals(v)) return t;
+        for (CarBodyType t : values())
+            if (t.value.equals(v)) return t;
         throw new IllegalArgumentException("Неизвестный тип кузова: " + v);
     }
 }

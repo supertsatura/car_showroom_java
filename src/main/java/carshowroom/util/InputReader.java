@@ -1,91 +1,239 @@
 package carshowroom.util;
 
 import java.math.BigDecimal;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+
 import java.util.Arrays;
 import java.util.Scanner;
+
 
 public class InputReader {
     private final Scanner scanner;
 
-    public InputReader(Scanner scanner) {
-        this.scanner = scanner;
+    public InputReader() {
+        this.scanner = new Scanner(System.in);
     }
 
-    public int readInt(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String input = scanner.nextLine().trim();
-            try {
-                return Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.println("  ⚠ Ошибка: введено не число. Попробуйте снова.");
-            }
-        }
+    public void close() {
+        scanner.close();
     }
 
     public int readPositiveInt(String prompt) {
         while (true) {
-            int val = readInt(prompt);
-            if (val > 0) return val;
-            System.out.println("  ⚠ Число должно быть положительным.");
+            System.out.print(prompt);
+
+            String s = scanner.nextLine().trim();
+
+            try {
+                int v = Integer.parseInt(s);
+
+                if (v >= 0) return v;
+
+                System.out.println("  Число должно быть положительным.");
+            } catch (NumberFormatException e) {
+                System.out.println("  Введено не число.");
+            }
+        }
+    }
+
+    public Integer readOptionalPositiveInt() {
+        while (true) {
+            System.out.print("  Пробег в км (Enter — пропустить): ");
+
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) return null;
+
+            try {
+
+                int v = Integer.parseInt(s);
+
+                if (v >= 0) return v;
+
+                System.out.println("  Число должно быть положительным.");
+            } catch (NumberFormatException e) {
+                System.out.println("  Введено не число.");
+            }
+        }
+    }
+
+    public Integer readOptionalPositiveInt(String prompt, Integer defaultValue) {
+        while (true) {
+            System.out.print(prompt);
+
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) return defaultValue;
+
+            try {
+
+                int v = Integer.parseInt(s);
+
+                if (v >= 0) return v;
+
+                System.out.println("  Число должно быть положительным.");
+            } catch (NumberFormatException e) {
+                System.out.println("  Введено не число.");
+            }
         }
     }
 
     public BigDecimal readBigDecimal(String prompt) {
         while (true) {
             System.out.print(prompt);
-            String input = scanner.nextLine().trim();
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) return null;
+
             try {
-                return new BigDecimal(input);
+                return new BigDecimal(s);
             } catch (NumberFormatException e) {
-                System.out.println("  ⚠ Ошибка: введено не число. Попробуйте снова.");
+                System.out.println("  Введено не число.");
             }
         }
     }
 
-    public String readString(String prompt) {
+    public BigDecimal readBigDecimal(String prompt, BigDecimal defaultValue) {
+        while (true) {
+            System.out.print(prompt);
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) return defaultValue;
+
+            try {
+                return new BigDecimal(s);
+            } catch (NumberFormatException e) {
+                System.out.println("  Введено не число.");
+            }
+        }
+    }
+
+    public String readNonRequiredString(String prompt) {
         System.out.print(prompt);
-        return scanner.nextLine().trim();
+        String s = scanner.nextLine().trim();
+
+        if (s.isBlank()) return null;
+
+        return s;
     }
 
     public String readRequiredString(String prompt) {
         while (true) {
             System.out.print(prompt);
+
             String s = scanner.nextLine().trim();
-            if (!s.isEmpty()) return s;
-            System.out.println("  ⚠ Поле не может быть пустым.");
+
+            if (!s.isBlank()) return s;
+
+            System.out.println("  Поле не может быть пустым.");
         }
     }
 
-    public String readRequiredString(String prompt, String defaultValue) {
+    public String readNonRequiredString(String prompt, String defaultValue) {
         System.out.print(prompt);
+
         String s = scanner.nextLine().trim();
-        return s.isEmpty() ? defaultValue : s;
+
+        return s.isBlank() ? defaultValue : s;
     }
 
-    public LocalDate readDate(String prompt) {
+    public String readRequiredPhone() {
         while (true) {
-            System.out.print(prompt + " (формат ГГГГ-ММ-ДД): ");
-            String input = scanner.nextLine().trim();
+            System.out.print("  Телефон (формат XX-XX-XX): ");
+
+            String s = scanner.nextLine().trim();
+
+            if (s.matches("^\\d{2}-\\d{2}-\\d{2}$")) return s;
+
+            System.out.println("  Неверный формат. Пример: 77-77-77");
+        }
+    }
+
+    public String readNonRequiredPhone(String prompt, String defaultValue) {
+        while (true) {
+            System.out.print(prompt);
+
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) return defaultValue;
+            if (s.matches("^\\d{2}-\\d{2}-\\d{2}$")) return s;
+
+            System.out.println("  Неверный формат. Пример: 77-77-77");
+        }
+    }
+
+    public LocalDate readDate() {
+        while (true) {
+            System.out.print("  Дата выпуска (ГГГГ-ММ-ДД): ");
+
+            String s = scanner.nextLine().trim();
+
             try {
-                return LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE);
-            } catch (DateTimeParseException e) {
-                System.out.println("   Ошибка: неверный формат даты. Используйте ГГГГ-ММ-ДД.");
+                return LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE);
+            } catch (Exception e) {
+                System.out.println("   Неверный формат даты.");
             }
         }
     }
 
-    public String readPhone(String prompt) {
+    public LocalDate readNonRequiredDate() {
         while (true) {
-            System.out.print(prompt + " (формат XX-XX-XX): ");
-            String input = scanner.nextLine().trim();
-            if (input.matches("^\\d{2}-\\d{2}-\\d{2}$")) {
-                return input;
+            System.out.print("  Дата выпуска (ГГГГ-ММ-ДД): ");
+
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) return null;
+
+            try {
+                return LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE);
+            } catch (Exception e) {
+                System.out.println("   Неверный формат даты.");
             }
-            System.out.println("  ⚠ Ошибка: телефон должен быть в формате XX-XX-XX (например, 77-77-77).");
+        }
+    }
+
+    public LocalDate readNonRequiredDate(String prompt, LocalDate defaultValue) {
+        while (true) {
+            System.out.print(prompt);
+
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) return defaultValue;
+
+            try {
+                return LocalDate.parse(s, DateTimeFormatter.ISO_LOCAL_DATE);
+            } catch (Exception e) {
+                System.out.println("   Неверный формат даты.");
+            }
+        }
+    }
+
+    public <E extends Enum<E>> E readEnum(String prompt, Class<E> enumClass, boolean isRequired) {
+        while (true) {
+            System.out.print(prompt);
+
+            String s = scanner.nextLine().trim();
+
+            if (s.isBlank()) {
+                if (!isRequired) return null;
+
+                System.out.println("  Поле не может быть пустым. Допустимые: " + Arrays.toString(enumClass.getEnumConstants()));
+                continue;
+            }
+
+            for (E e : enumClass.getEnumConstants()) {
+                try {
+                    String val = (String) e.getClass().getMethod("getValue").invoke(e);
+
+                    if (val.equalsIgnoreCase(s)) return e;
+                } catch (Exception ex) {
+                    if (e.name().equalsIgnoreCase(s)) return e;
+                }
+            }
+
+            System.out.println("  Введено неверное значение. Допустимые: " + Arrays.toString(enumClass.getEnumConstants()));
         }
     }
 }
